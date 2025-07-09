@@ -1,8 +1,26 @@
 import type { NextConfig } from "next";
 
-const nextConfig: NextConfig = {
-  /* config options here */
+const NextConfig = {
   reactStrictMode: true,
+  images: {
+    domains: [
+      "i0.wp.com",
+      "electrek.co",
+      "cdn.newsapi.org",
+      "media.cnn.com",
+      "ichef.bbci.co.uk",
+      "static01.nyt.com",
+      "static.feber.se",
+      "imageio.forbes.com", // ✅ adicionado
+      "wordpress-assets.futurism.com",
+      "cdn.wccftech.com",
+      "smartcdn.gprod.postmedia.digital",
+       "d3i6fh83elv35t.cloudfront.net",
+       "www.livemint.com",
+    ],
+  },
 };
 
-export default nextConfig;
+export default NextConfig;
+
+

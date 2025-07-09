@@ -1,115 +1,139 @@
-import Image from "next/image";
-import { Geist, Geist_Mono } from "next/font/google";
+import { useEffect, useState } from "react";
+import NewsCard from "@/components/NewsCard";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+type NewsItem = {
+  _id: string;
+  title: string;
+  content: string;
+  author?: string | { username: string };
+  views: number;
+  likes: number;
+  likedBy?: string[];
+  image?: string | null;
+   url?: string;
+};
 
 export default function Home() {
+  const [localNews, setLocalNews] = useState<NewsItem[]>([]);
+  const [externalNews, setExternalNews] = useState<NewsItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  const [verMaisLocal, setVerMaisLocal] = useState(false);
+  const [verMaisExterna, setVerMaisExterna] = useState(false);
+
+  const maxExibir = 8;
+
+  useEffect(() => {
+    fetch("/api/news/list")
+      .then((res) => res.json())
+      .then((data) => {
+        const items = Array.isArray(data.news) ? data.news : [];
+
+        const locais = items.filter((item: NewsItem) => !item._id.startsWith("api-"));
+        const externas = items.filter((item: NewsItem) => item._id.startsWith("api-"));
+
+        setLocalNews(locais);
+        setExternalNews(externas);
+      })
+      .catch(() => setError("Erro ao carregar notícias."))
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) return <p>🕓 Carregando conteúdo...</p>;
+  if (error) return <p style={{ color: "red" }}>{error}</p>;
+
+  const totalLocal = localNews.length;
+  const totalExterna = externalNews.length;
+
+  const exibidosLocal = verMaisLocal ? totalLocal : Math.min(maxExibir, totalLocal);
+  const exibidosExterna = verMaisExterna ? totalExterna : Math.min(maxExibir, totalExterna);
+
   return (
-    <div
-      className={`${geistSans.className} ${geistMono.className} grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]`}
-    >
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              pages/index.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+    <section style={{ padding: "1rem" }}>
+      {/* 📰 Notícias Locais */}
+      <h1 style={{ fontSize: "24px", marginBottom: "0.5rem" }}>📰 Notícias Nacional(Angola)</h1>
+      <p style={{ fontSize: "13px", color: "#666", marginBottom: "1rem" }}>
+        Exibindo {exibidosLocal} de {totalLocal}
+      </p>
+
+      {totalLocal === 0 ? (
+        <p>Nenhuma notícia local encontrada.</p>
+      ) : (
+        <>
+          {(verMaisLocal ? localNews : localNews.slice(0, maxExibir)).map((item) => (
+            <NewsCard
+              key={item._id}
+              id={item._id}
+              title={item.title}
+              content={item.content}
+              author={typeof item.author === "string" ? item.author : item.author?.username}
+              views={item.views}
+              likes={item.likes}
+              likedBy={item.likedBy || []}
+              image={item.image}
             />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+          ))}
+          {totalLocal > maxExibir && (
+            <button
+              onClick={() => setVerMaisLocal(!verMaisLocal)}
+              style={{
+                marginTop: "1rem",
+                padding: "0.5rem 1rem",
+                borderRadius: "6px",
+                border: "1px solid #ccc",
+                cursor: "pointer",
+                background: "#f0f0f0",
+              }}
+            >
+              {verMaisLocal ? "Ver menos" : "Ver mais"}
+            </button>
+          )}
+        </>
+      )}
+
+      {/* 🌍 Manchetes Externas */}
+      <hr style={{ margin: "2rem 0", border: "1px solid #ccc" }} />
+      <h2 style={{ fontSize: "20px", marginBottom: "0.5rem" }}>🌍 Manchetes Internacionais (Mundo)</h2>
+      <p style={{ fontSize: "13px", color: "#666", marginBottom: "1rem" }}>
+        Exibindo {exibidosExterna} de {totalExterna}
+      </p>
+
+      {totalExterna === 0 ? (
+        <p>Nenhuma manchete externa disponível.</p>
+      ) : (
+        <>
+          {(verMaisExterna ? externalNews : externalNews.slice(0, maxExibir)).map((item) => (
+            <NewsCard
+              key={item._id}
+              id={item._id}
+              title={item.title}
+              content={item.content}
+              author={typeof item.author === "string" ? item.author : item.author?.username}
+              views={item.views}
+              likes={item.likes}
+              likedBy={item.likedBy || []}
+              image={item.image}
+               url={item.url || ""}
+            />
+          ))}
+          {totalExterna > maxExibir && (
+            <button
+              onClick={() => setVerMaisExterna(!verMaisExterna)}
+              style={{
+                marginTop: "1rem",
+                padding: "0.5rem 1rem",
+                borderRadius: "6px",
+                border: "1px solid #ccc",
+                cursor: "pointer",
+                background: "#f0f0f0",
+              }}
+            >
+              {verMaisExterna ? "Ver menos" : "Ver mais"}
+            </button>
+          )}
+        </>
+      )}
+    </section>
   );
 }
