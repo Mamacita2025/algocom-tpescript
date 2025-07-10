@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import NewsCard from "@/components/NewsCard";
+import NewsCard, { cardStyle } from "@/components/NewsCard";
 
 type NewsItem = {
   _id: string;
@@ -9,131 +9,83 @@ type NewsItem = {
   views: number;
   likes: number;
   likedBy?: string[];
+  commentsCount?: number;
   image?: string | null;
-   url?: string;
+  url?: string;
 };
 
 export default function Home() {
-  const [localNews, setLocalNews] = useState<NewsItem[]>([]);
-  const [externalNews, setExternalNews] = useState<NewsItem[]>([]);
+  const [news, setNews] = useState<NewsItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-
-  const [verMaisLocal, setVerMaisLocal] = useState(false);
-  const [verMaisExterna, setVerMaisExterna] = useState(false);
-
-  const maxExibir = 8;
 
   useEffect(() => {
     fetch("/api/news/list")
       .then((res) => res.json())
-      .then((data) => {
-        const items = Array.isArray(data.news) ? data.news : [];
-
-        const locais = items.filter((item: NewsItem) => !item._id.startsWith("api-"));
-        const externas = items.filter((item: NewsItem) => item._id.startsWith("api-"));
-
-        setLocalNews(locais);
-        setExternalNews(externas);
-      })
+      .then((data) => setNews(data.news || []))
       .catch(() => setError("Erro ao carregar notícias."))
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <p>🕓 Carregando conteúdo...</p>;
-  if (error) return <p style={{ color: "red" }}>{error}</p>;
-
-  const totalLocal = localNews.length;
-  const totalExterna = externalNews.length;
-
-  const exibidosLocal = verMaisLocal ? totalLocal : Math.min(maxExibir, totalLocal);
-  const exibidosExterna = verMaisExterna ? totalExterna : Math.min(maxExibir, totalExterna);
+  if (loading) return <p style={centered}>🕓 Carregando notícias…</p>;
+  if (error) return <p style={{ ...centered, color: "red" }}>{error}</p>;
 
   return (
-    <section style={{ padding: "1rem" }}>
-      {/* 📰 Notícias Locais */}
-      <h1 style={{ fontSize: "24px", marginBottom: "0.5rem" }}>📰 Notícias Nacional(Angola)</h1>
-      <p style={{ fontSize: "13px", color: "#666", marginBottom: "1rem" }}>
-        Exibindo {exibidosLocal} de {totalLocal}
-      </p>
+    <main style={mainStyle}>
+      <h1 style={titleStyle}>📰 Últimas Notícias</h1>
 
-      {totalLocal === 0 ? (
-        <p>Nenhuma notícia local encontrada.</p>
-      ) : (
-        <>
-          {(verMaisLocal ? localNews : localNews.slice(0, maxExibir)).map((item) => (
+      <div style={gridStyle}>
+        {news.map((item) => (
+          <div key={item._id} style={cardWrapper}>
             <NewsCard
-              key={item._id}
               id={item._id}
               title={item.title}
               content={item.content}
-              author={typeof item.author === "string" ? item.author : item.author?.username}
+              author={
+                typeof item.author === "string"
+                  ? item.author
+                  : item.author?.username
+              }
               views={item.views}
               likes={item.likes}
               likedBy={item.likedBy || []}
+              commentsCount={item.commentsCount || 0}
               image={item.image}
+              url={item.url}
             />
-          ))}
-          {totalLocal > maxExibir && (
-            <button
-              onClick={() => setVerMaisLocal(!verMaisLocal)}
-              style={{
-                marginTop: "1rem",
-                padding: "0.5rem 1rem",
-                borderRadius: "6px",
-                border: "1px solid #ccc",
-                cursor: "pointer",
-                background: "#f0f0f0",
-              }}
-            >
-              {verMaisLocal ? "Ver menos" : "Ver mais"}
-            </button>
-          )}
-        </>
-      )}
-
-      {/* 🌍 Manchetes Externas */}
-      <hr style={{ margin: "2rem 0", border: "1px solid #ccc" }} />
-      <h2 style={{ fontSize: "20px", marginBottom: "0.5rem" }}>🌍 Manchetes Internacionais (Mundo)</h2>
-      <p style={{ fontSize: "13px", color: "#666", marginBottom: "1rem" }}>
-        Exibindo {exibidosExterna} de {totalExterna}
-      </p>
-
-      {totalExterna === 0 ? (
-        <p>Nenhuma manchete externa disponível.</p>
-      ) : (
-        <>
-          {(verMaisExterna ? externalNews : externalNews.slice(0, maxExibir)).map((item) => (
-            <NewsCard
-              key={item._id}
-              id={item._id}
-              title={item.title}
-              content={item.content}
-              author={typeof item.author === "string" ? item.author : item.author?.username}
-              views={item.views}
-              likes={item.likes}
-              likedBy={item.likedBy || []}
-              image={item.image}
-               url={item.url || ""}
-            />
-          ))}
-          {totalExterna > maxExibir && (
-            <button
-              onClick={() => setVerMaisExterna(!verMaisExterna)}
-              style={{
-                marginTop: "1rem",
-                padding: "0.5rem 1rem",
-                borderRadius: "6px",
-                border: "1px solid #ccc",
-                cursor: "pointer",
-                background: "#f0f0f0",
-              }}
-            >
-              {verMaisExterna ? "Ver menos" : "Ver mais"}
-            </button>
-          )}
-        </>
-      )}
-    </section>
+          </div>
+        ))}
+      </div>
+    </main>
   );
 }
+
+// estilos inline
+
+const centered: React.CSSProperties = {
+  textAlign: "center",
+  marginTop: "2rem",
+};
+
+const mainStyle: React.CSSProperties = {
+  maxWidth: "1200px",
+  margin: "auto",
+  padding: "2rem 1rem",
+};
+
+const titleStyle: React.CSSProperties = {
+  fontSize: "2rem",
+  marginBottom: "1.5rem",
+  textAlign: "center",
+};
+
+const gridStyle: React.CSSProperties = {
+  display: "grid",
+  gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
+  gap: "1.5rem",
+};
+
+const cardWrapper: React.CSSProperties = {
+  // opcional: garantir que o NewsCard preencha toda a célula
+  display: "flex",
+};

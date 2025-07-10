@@ -1,51 +1,52 @@
+// pages/api/news/[id]/like.ts
+
 import type { NextApiRequest, NextApiResponse } from "next";
 import { connectDB } from "@/lib/mongodb";
 import News from "@/models/News";
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
 
-type TokenPayload = {
-  userId: string;
-};
+type TokenPayload = { userId: string };
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   await connectDB();
 
   const { id } = req.query;
-  const token = req.headers.authorization?.split(" ")[1];
-
-  if (req.method !== "POST") {
-    return res.status(405).json({ error: "Método não permitido." });
-  }
-
-  if (!id || typeof id !== "string" || !mongoose.Types.ObjectId.isValid(id)) {
+  if (!id || Array.isArray(id) || !mongoose.Types.ObjectId.isValid(id)) {
     return res.status(400).json({ error: "ID da notícia inválido." });
   }
 
-  if (!token) {
-    return res.status(401).json({ error: "Token de autenticação ausente." });
+  if (req.method !== "POST" && req.method !== "DELETE") {
+    return res.status(405).json({ error: "Método não permitido." });
   }
 
+  const authHeader = req.headers.authorization;
+  if (!authHeader) return res.status(401).json({ error: "Token ausente." });
+
+  const token = authHeader.replace("Bearer ", "");
+  let payload: TokenPayload;
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as TokenPayload;
+    payload = jwt.verify(token, process.env.JWT_SECRET!) as TokenPayload;
+  } catch (e) {
+    return res.status(401).json({ error: "Token inválido." });
+  }
 
-    const noticia = await News.findById(id);
-    if (!noticia) {
-      return res.status(404).json({ error: "Notícia não encontrada." });
-    }
+  const update =
+    req.method === "POST"
+      ? { $addToSet: { likedBy: payload.userId }, $inc: { likes: 1 } }
+      : { $pull: { likedBy: payload.userId }, $inc: { likes: -1 } };
 
-    const alreadyLiked = noticia.likedBy.includes(decoded.userId);
-    if (alreadyLiked) {
-      return res.status(409).json({ error: "Você já curtiu esta notícia." });
-    }
+  try {
+    const news = await News.findByIdAndUpdate(id, update, { new: true });
+    if (!news) return res.status(404).json({ error: "Notícia não encontrada." });
 
-    noticia.likes += 1;
-    noticia.likedBy.push(decoded.userId);
-    await noticia.save();
-
-    return res.status(200).json({ message: "Like registrado com sucesso.", data: noticia });
-  } catch (err) {
-    console.error("Erro ao registrar like:", err);
-    return res.status(500).json({ error: "Erro interno ao processar o like." });
+    return res.status(200).json({
+      message: req.method === "POST" ? "Curtida registrada." : "Curtida removida.",
+      likes: news.likes,
+      likedBy: news.likedBy,
+    });
+  } catch (e: any) {
+    console.error("DB Error:", e);
+    return res.status(500).json({ error: "Erro interno ao processar like." });
   }
 }

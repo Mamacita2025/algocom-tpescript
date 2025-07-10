@@ -129,26 +129,32 @@ export default function PerfilPage() {
           <div className="mt-5">
             <h2>💬 Comentários feitos</h2>
             <ul className="list-group mb-4">
-              {activity.comments.map((c) => (
-                <li key={c._id} className="list-group-item">
-                  <strong>{c.newsId.title}</strong>: {c.text}
-                  <Link href={`/news/${c.newsId._id}`} className="ms-2">
-                    Ver notícia
-                  </Link>
-                </li>
-              ))}
+             {activity.comments.map((c) => {
+  // se newsId for null, pula
+  if (!c.newsId) return null;
+  return (
+    <li key={c._id} className="list-group-item">
+      <strong>{c.newsId.title}</strong>: {c.text}
+      <Link href={`/noticia/${c.newsId._id}`} className="ms-2">
+        Ver notícia
+      </Link>
+    </li>
+  );
+})}
+
             </ul>
 
             <h2>👍 Notícias curtidas</h2>
             <ul className="list-group">
-              {activity.likes.map((l) => (
-                <li key={l._id} className="list-group-item">
-                  <strong>{l.newsId.title}</strong>
-                  <Link href={`/news/${l.newsId._id}`} className="ms-2">
-                    Ver notícia
-                  </Link>
-                </li>
-              ))}
+             {activity.likes.map((l) => (
+  <li key={l._id} className="list-group-item">
+    <strong>{l.title}</strong>
+    <Link href={`/noticia/${l._id}`} className="ms-2">
+      Ver notícia
+    </Link>
+  </li>
+))}
+
             </ul>
           </div>
         )}

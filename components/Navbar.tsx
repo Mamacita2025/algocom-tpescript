@@ -1,82 +1,137 @@
+// components/Navbar.tsx
+
 import Link from "next/link";
 import { useRouter } from "next/router";
 import Image from "next/image";
 import { useAuth } from "@/context/AuthContext";
 
 export default function Navbar() {
-  const router = useRouter();
   const { user, logout } = useAuth();
+  const router = useRouter();
+
+  // helper para active link
+  const isActive = (path: string) => router.pathname === path;
 
   return (
-    <nav className="navbar navbar-expand-lg navbar-dark bg-dark px-3">
-      <Link className="navbar-brand" href="/">📰 MeuPortal</Link>
+    <nav className="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
+      <div className="container">
+        <Link href="/" className="navbar-brand d-flex align-items-center">
+          <span className="fs-3">📰</span>
+          <span className="ms-2 fw-bold">MeuPortal</span>
+        </Link>
 
-      <button
-        className="navbar-toggler"
-        type="button"
-        data-bs-toggle="collapse"
-        data-bs-target="#navbarContent"
-        aria-controls="navbarContent"
-        aria-expanded="false"
-        aria-label="Toggle navigation"
-      >
-        <span className="navbar-toggler-icon"></span>
-      </button>
+        <button
+          className="navbar-toggler border-0"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarContent"
+          aria-controls="navbarContent"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span className="navbar-toggler-icon"></span>
+        </button>
 
-      <div className="collapse navbar-collapse" id="navbarContent">
-        <ul className="navbar-nav me-auto mb-2 mb-lg-0">
-          <li className="nav-item">
-            <Link className="nav-link" href="/">🏠 Home</Link>
-          </li>
-          <li className="nav-item">
-            <Link className="nav-link" href="/sobre">📘 Sobre</Link>
-          </li>
-          {user?.role === "admin" && (
-            <li className="nav-item">
-              <Link className="nav-link" href="/admin">🛠️ Administração</Link>
-            </li>
-          )}
-        </ul>
-
-        {user ? (
-          <div className="dropdown">
-            <button
-              className="btn btn-outline-light dropdown-toggle d-flex align-items-center"
-              type="button"
-              data-bs-toggle="dropdown"
-              aria-expanded="false"
-            >
-              {user.avatar && (
-                <Image
-                  src={user.avatar}
-                  alt="avatar"
-                  width={32}
-                  height={32}
-                  className="rounded-circle me-2"
-                />
-              )}
-              <span className="d-none d-sm-inline">{user.username}</span>
-            </button>
-            <ul className="dropdown-menu dropdown-menu-end">
-              <li>
-                <Link className="dropdown-item" href="/perfil">👤 Meu perfil</Link>
+        <div className="collapse navbar-collapse" id="navbarContent">
+          <ul className="navbar-nav me-auto mb-2 mb-lg-0">
+            {[
+              { href: "/", label: "Home", icon: "🏠" },
+              { href: "/noticias", label: "Notícias", icon: "📰" },
+              { href: "/perfil", label: "Perfil", icon: "👤" },
+              { href: "/sobre", label: "Sobre", icon: "📘" },
+            ].map((item) => (
+              <li key={item.href} className="nav-item">
+                <Link
+                  href={item.href}
+                  className={
+                    "nav-link d-flex align-items-center " +
+                    (isActive(item.href) ? "active fw-semibold" : "")
+                  }
+                >
+                  <span className="d-lg-none">{item.icon}</span>
+                  <span className="ms-1">{item.label}</span>
+                </Link>
               </li>
-              {user?.role === "admin" && (
-                <li>
-                  <Link className="dropdown-item" href="/admin">🛠️ Administração</Link>
-                </li>
-              )}
-              <li>
-                <button className="dropdown-item" onClick={logout}>🚪 Sair</button>
+            ))}
+
+            {user?.role === "admin" && (
+              <li className="nav-item">
+                <Link
+                  href="/admin"
+                  className={
+                    "nav-link d-flex align-items-center " +
+                    (isActive("/admin") ? "active fw-semibold" : "")
+                  }
+                >
+                  <span className="d-lg-none">🛠️</span>
+                  <span className="ms-1">Admin</span>
+                </Link>
               </li>
-            </ul>
+            )}
+          </ul>
+
+          <div className="d-flex align-items-center">
+            {user ? (
+              <div className="dropdown">
+                <button
+                  className="btn btn-outline-light d-flex align-items-center"
+                  type="button"
+                  data-bs-toggle="dropdown"
+                  aria-expanded="false"
+                >
+                  {user.avatar ? (
+                    <Image
+                      src={user.avatar}
+                      alt="avatar"
+                      width={32}
+                      height={32}
+                      className="rounded-circle"
+                    />
+                  ) : (
+                    <span className="fs-4 me-2">👤</span>
+                  )}
+                  <span className="ms-2 d-none d-sm-inline">
+                    {user.username}
+                  </span>
+                </button>
+                <ul className="dropdown-menu dropdown-menu-end mt-2 shadow-sm">
+                  <li>
+                    <Link href="/perfil" className="dropdown-item">
+                      👤 Meu Perfil
+                    </Link>
+                  </li>
+                  {user.role === "admin" && (
+                    <li>
+                      <Link href="/admin" className="dropdown-item">
+                        🛠️ Administração
+                      </Link>
+                    </li>
+                  )}
+                  <li>
+                    <hr className="dropdown-divider" />
+                  </li>
+                  <li>
+                    <button className="dropdown-item text-danger" onClick={logout}>
+                      🚪 Sair
+                    </button>
+                  </li>
+                </ul>
+              </div>
+            ) : (
+              <>
+                <Link href="/login" className="btn btn-outline-light btn-sm me-2">
+                  Entrar
+                </Link>
+                <Link
+                  href="/register"
+                  className="btn btn-light btn-sm text-primary"
+                >
+                  Registrar
+                </Link>
+              </>
+            )}
           </div>
-        ) : (
-          <div className="d-flex gap-2">
-            <Link className="btn btn-outline-light btn-sm" href="/login">Entrar</Link>
-            <Link className="btn btn-outline-light btn-sm" href="/register">Registrar</Link>
-          </div>
-        )}
+        </div>
       </div>
     </nav>
   );

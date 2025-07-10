@@ -1,5 +1,11 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
-import {jwtDecode} from "jwt-decode";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  ReactNode,
+} from "react";
+import { jwtDecode } from "jwt-decode";
 
 type TokenPayload = {
   userId: string;
@@ -13,7 +19,8 @@ type AuthContextType = {
   logout: () => void;
 };
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+// exporta o contexto para ser consumido diretamente (opcional)
+export const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<TokenPayload | null>(null);
@@ -30,10 +37,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const logout = () => {
+  function logout() {
     localStorage.removeItem("token");
     setUser(null);
-  };
+  }
 
   return (
     <AuthContext.Provider value={{ user, logout }}>
@@ -42,9 +49,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 }
 
-export function useAuth() {
+// hook para facilitar consumo do contexto
+export function useAuth(): AuthContextType {
   const context = useContext(AuthContext);
-  if (context === undefined) {
+  if (context === null) {
     throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;

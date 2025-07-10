@@ -17,6 +17,9 @@ const NextConfig = {
       "smartcdn.gprod.postmedia.digital",
        "d3i6fh83elv35t.cloudfront.net",
        "www.livemint.com",
+        "techcrunch.com",
+      "i.kinja-img.com",    // ajuste conforme as URLs que aparecerem
+      "example.com",
     ],
   },
 };

@@ -1,5 +1,6 @@
 import React from "react";
 import Navbar from "./Navbar";
+import Footer from "./Footer";
 
 type Props = {
   children: React.ReactNode;
@@ -22,14 +23,7 @@ export default function Layout({ children }: Props) {
       </main>
 
       {/* Rodapé */}
-      <footer style={{
-        textAlign: "center",
-        padding: "1rem",
-        background: "#f0f0f0",
-        fontSize: "14px"
-      }}>
-        © {new Date().getFullYear()} Todos os direitos reservados.
-      </footer>
+      <Footer />
     </div>
   );
 }
