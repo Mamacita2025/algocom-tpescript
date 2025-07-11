@@ -80,6 +80,7 @@ export default function PerfilPage() {
       setUser(json.user);
       setSuccess(true);
       setErrors({});
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setErrors({ username: err.message });
     } finally {

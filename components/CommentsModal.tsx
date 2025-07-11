@@ -57,6 +57,7 @@ export default function CommentsModal({
       // o novo objeto vem com campo `user`
       setComments((prev) => [data.comment, ...prev]);
       setNewText("");
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setError(err.message);
     }

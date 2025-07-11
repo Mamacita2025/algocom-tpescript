@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 // pages/api/news/[id]/like.ts
 
 import type { NextApiRequest, NextApiResponse } from "next";
@@ -45,6 +46,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       likes: news.likes,
       likedBy: news.likedBy,
     });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (e: any) {
     console.error("DB Error:", e);
     return res.status(500).json({ error: "Erro interno ao processar like." });

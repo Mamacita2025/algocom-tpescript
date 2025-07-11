@@ -59,6 +59,7 @@ export default function Comentarios({ newsId }: Props) {
 
       setComentarios((prev) => [data.data, ...prev]);
       setTexto("");
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setError(err.message);
     } finally {

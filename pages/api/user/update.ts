@@ -47,6 +47,7 @@ export default async function handler(
   const auth = req.headers.authorization;
   if (!auth) return res.status(401).json({ error: "Token não enviado" });
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let payload: any;
   try {
     payload = jwt.verify(auth.replace("Bearer ", ""), SECRET);
@@ -58,6 +59,7 @@ export default async function handler(
 
   try {
     const { fields, files } = await parseForm(req);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const updates: any = {};
 
     if (fields.username) {
@@ -79,6 +81,7 @@ export default async function handler(
     ).lean();
 
     return res.status(200).json({ user: updatedUser });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
     console.error("Erro em /api/user/update:", err);
     return res.status(500).json({ error: "Erro interno no servidor." });

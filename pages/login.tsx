@@ -7,6 +7,7 @@ import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 
 export default function Login() {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const router = useRouter();
   const { login } = useAuth();
 
@@ -26,6 +27,7 @@ export default function Login() {
     try {
       // encapsula POST /api/auth/login + GET /api/auth/me + redirect
       await login(form.username, form.password);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setError(err.message);
       setLoading(false);

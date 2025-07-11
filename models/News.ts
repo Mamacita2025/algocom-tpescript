@@ -1,6 +1,6 @@
 import mongoose, { Schema, Document, Model } from "mongoose";
 
-export interface INews extends Document {
+export  interface INews extends Document {
   title: string;
   content: string;
   category?: string;
@@ -31,4 +31,4 @@ const NewsSchema = new Schema<INews>(
 
 const News: Model<INews> = mongoose.models.News || mongoose.model("News", NewsSchema);
 
-export default News;
+export  default News;

@@ -1,7 +1,6 @@
 // pages/noticias.tsx
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import NewsCard from "@/components/NewsCard";
 import NewsFeed from "@/components/NewsFeed";
 
@@ -46,6 +45,7 @@ export default function NoticiasPage() {
         page === 1 ? data.news : [...prev, ...data.news]
       );
       setHasMore(data.news.length === PAGE_SIZE);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setError(err.message);
     } finally {

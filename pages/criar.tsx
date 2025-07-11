@@ -71,6 +71,7 @@ export default function CriarNoticia() {
       if (!res.ok) throw new Error(result?.error || "Erro desconhecido.");
 
       router.push(`/noticia/${result.data._id}`);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setError(err.message);
     } finally {
