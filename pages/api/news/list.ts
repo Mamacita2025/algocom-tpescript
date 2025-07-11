@@ -6,7 +6,7 @@ import { connectDB } from "@/lib/mongodb";
 import User from "@/models/User";
 import News, { INews } from "@/models/News";
 import Comment from "@/models/Comment";
-import { FilterQuery, Types } from "mongoose";
+import { FilterQuery } from "mongoose";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   await connectDB();
@@ -50,6 +50,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
 
     // Manchetes externas…
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const externalWithCounts: Array<any> = [];
     const resp = await axios.get("https://newsapi.org/v2/top-headlines", {
       params: { sources: "techcrunch", apiKey: process.env.NEWSAPI_KEY, pageSize: limit, q },
@@ -70,7 +71,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         { upsert: true, new: true, setDefaultsOnInsert: true }
       ).lean();
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const cnt = await Comment.countDocuments({ newsId: (doc as any)._id });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       externalWithCounts.push({ ...(doc as any), commentsCount: cnt });
     }
 

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import NewsCard, { cardStyle } from "@/components/NewsCard";
+import NewsCard from "@/components/NewsCard";
 
 type NewsItem = {
   _id: string;

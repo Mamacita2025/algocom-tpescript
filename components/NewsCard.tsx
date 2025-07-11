@@ -53,6 +53,7 @@ export default function NewsCard({
       if (!res.ok) throw new Error(data.error || "Falha ao curtir");
       setIsLiked(!isLiked);
       setLikesCount((c) => c + (isLiked ? -1 : 1));
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       alert(err.message);
     }
