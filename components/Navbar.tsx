@@ -1,7 +1,8 @@
 // components/Navbar.tsx
+"use client";
 
 import Link from "next/link";
-import { useRouter } from "next/router";
+import { useRouter } from "next/router";     // ← Pages Router usa next/router
 import Image from "next/image";
 import { useAuth } from "@/context/AuthContext";
 
@@ -9,8 +10,8 @@ export default function Navbar() {
   const { user, logout } = useAuth();
   const router = useRouter();
 
-  // helper para active link
-  const isActive = (path: string) => router.pathname === path;
+  // helper para marcar o link ativo
+  const isActive = (href: string) => router.pathname === href;
 
   return (
     <nav className="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
@@ -86,6 +87,7 @@ export default function Navbar() {
                       width={32}
                       height={32}
                       className="rounded-circle"
+                      unoptimized
                     />
                   ) : (
                     <span className="fs-4 me-2">👤</span>
@@ -94,6 +96,7 @@ export default function Navbar() {
                     {user.username}
                   </span>
                 </button>
+
                 <ul className="dropdown-menu dropdown-menu-end mt-2 shadow-sm">
                   <li>
                     <Link href="/perfil" className="dropdown-item">
@@ -111,7 +114,10 @@ export default function Navbar() {
                     <hr className="dropdown-divider" />
                   </li>
                   <li>
-                    <button className="dropdown-item text-danger" onClick={logout}>
+                    <button
+                      className="dropdown-item text-danger"
+                      onClick={logout}
+                    >
                       🚪 Sair
                     </button>
                   </li>
@@ -119,7 +125,10 @@ export default function Navbar() {
               </div>
             ) : (
               <>
-                <Link href="/login" className="btn btn-outline-light btn-sm me-2">
+                <Link
+                  href="/login"
+                  className="btn btn-outline-light btn-sm me-2"
+                >
                   Entrar
                 </Link>
                 <Link

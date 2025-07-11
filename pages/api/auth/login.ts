@@ -1,23 +1,70 @@
+// pages/api/auth/login.ts
+
 import type { NextApiRequest, NextApiResponse } from "next";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import User from "@/models/User";
 import { connectDB } from "@/lib/mongodb";
 
-const SECRET = process.env.JWT_SECRET || "minha-chave-super-secreta";
+const SECRET = process.env.JWT_SECRET;
+if (!SECRET) {
+  throw new Error("Missing JWT_SECRET in environment");
+}
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse
+) {
   await connectDB();
-  if (req.method !== "POST") return res.status(405).json({ error: "Método não permitido." });
 
-  const { username, password } = req.body;
-  const user = await User.findOne({ username });
+  if (req.method !== "POST") {
+    res.setHeader("Allow", "POST");
+    return res
+      .status(405)
+      .json({ error: "Método não permitido. Use POST." });
+  }
 
-  if (!user || !user.password) return res.status(401).json({ error: "Credenciais inválidas." });
+  try {
+    const { username, password } = req.body;
 
-  const isMatch = await bcrypt.compare(password, user.password);
-  if (!isMatch) return res.status(401).json({ error: "Senha incorreta." });
+    if (
+      typeof username !== "string" ||
+      typeof password !== "string" ||
+      !username.trim() ||
+      !password
+    ) {
+      return res
+        .status(400)
+        .json({ error: "Username e password são obrigatórios." });
+    }
 
-  const token = jwt.sign({ id: user._id, username: user.username }, SECRET, { expiresIn: "1d" });
-  res.status(200).json({ token });
+    // Busca o usuário no banco
+    const user = await User.findOne({ username }).lean();
+    if (!user || !user.password) {
+      return res.status(401).json({ error: "Credenciais inválidas." });
+    }
+
+    // Compara senha
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ error: "Credenciais inválidas." });
+    }
+
+    // Gera payload e token
+    const payload = {
+      userId: user._id.toString(),
+      username: user.username,
+      role: user.role,
+    };
+    const token = jwt.sign(payload, SECRET, {
+      expiresIn: "1d",
+    });
+
+    return res.status(200).json({ token });
+  } catch (err) {
+    console.error("Erro em /api/auth/login:", err);
+    return res
+      .status(500)
+      .json({ error: "Erro interno no servidor. Tente novamente." });
+  }
 }

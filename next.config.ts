@@ -20,6 +20,8 @@ const NextConfig = {
         "techcrunch.com",
       "i.kinja-img.com",    // ajuste conforme as URLs que aparecerem
       "example.com",
+      "www.google.com",
+       "carroaluguel.com"
     ],
   },
 };

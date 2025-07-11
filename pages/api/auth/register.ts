@@ -1,7 +1,8 @@
+// Exemplo simplificado de handler com tratamento de erros
 import type { NextApiRequest, NextApiResponse } from "next";
-import bcrypt from "bcrypt";
-import User from "@/models/User";
 import { connectDB } from "@/lib/mongodb";
+import User from "@/models/User";
+import bcrypt from "bcrypt";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   await connectDB();
@@ -12,30 +13,30 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   const { username, email, password } = req.body;
 
+  // validações básicas
   if (!username || !password) {
-    return res.status(400).json({ error: "Usuário e senha são obrigatórios." });
+    return res.status(400).json({ error: "username e password são obrigatórios." });
+  }
+  if (password.length < 6) {
+    return res.status(400).json({ error: "Senha deve ter ao menos 6 caracteres." });
   }
 
   try {
-    const existing = await User.findOne({ username });
-    if (existing) {
-      return res.status(409).json({ error: "Nome de usuário já está em uso." });
+    // checar usuário duplicado
+    const exists = await User.findOne({ username });
+    if (exists) {
+      return res.status(409).json({ error: "Username já cadastrado." });
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    // salvar no banco
+    const hash = await bcrypt.hash(password, 10);
+    const newUser = new User({ username, email, password: hash });
+    await newUser.save();
 
-    const novoUsuario = await User.create({
-      username,
-      email,
-      password: hashedPassword,
-      role: "user", // ✅ função padrão como usuário comum
-    });
-
-    // Evita retornar a senha hash
-    const { password: _, ...userData } = novoUsuario.toObject();
-
-    res.status(201).json({ message: "Usuário criado com sucesso", user: userData });
-  } catch {
-    res.status(500).json({ error: "Erro ao registrar o usuário." });
+    return res.status(201).json({ message: "Usuário criado com sucesso." });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (err: any) {
+    console.error("Erro em /api/auth/register:", err);
+    return res.status(500).json({ error: "Erro interno do servidor." });
   }
 }
