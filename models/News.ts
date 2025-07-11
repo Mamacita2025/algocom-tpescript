@@ -6,6 +6,7 @@ export  interface INews extends Document {
   category?: string;
   author?: mongoose.Types.ObjectId;
   likes: number;
+   hidden?: boolean;        
   views: number;
   likedBy: mongoose.Types.ObjectId[];
   image?: string;
@@ -22,6 +23,7 @@ const NewsSchema = new Schema<INews>(
     author: { type: Schema.Types.ObjectId, ref: "User" },
     likes: { type: Number, default: 0 },
     views: { type: Number, default: 0 },
+     hidden:  { type: Boolean, default: false },
     likedBy: [{ type: Schema.Types.ObjectId, ref: "User" }],
     image: { type: String },
     url: { type: String },
