@@ -1,13 +1,26 @@
+// pages/api/news/create.ts
+
 import type { NextApiRequest, NextApiResponse } from "next";
 import { connectDB } from "@/lib/mongodb";
 import News from "@/models/News";
-import { verifyToken } from "@/lib/auth";
+import { verifyToken, IJwtUser } from "@/lib/auth";
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+type CreateNewsResponse = 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  | { data: any }
+  | { error: string };
+
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse<CreateNewsResponse>
+) {
   await connectDB();
-  if (req.method !== "POST") return res.status(405).json({ error: "Método não permitido." });
 
-  let user;
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Método não permitido." });
+  }
+
+  let user: IJwtUser;
   try {
     user = verifyToken(req);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -15,22 +28,32 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(401).json({ error: err.message });
   }
 
-  const { title, content, category, tags } = req.body;
-  if (!title || !content) return res.status(400).json({ error: "Título e conteúdo obrigatórios." });
+  const { title, content, category, tags } = req.body as {
+    title?: unknown;
+    content?: unknown;
+    category?: unknown;
+    tags?: unknown;
+  };
+
+  if (typeof title !== "string" || typeof content !== "string") {
+    return res
+      .status(400)
+      .json({ error: "Título e conteúdo obrigatórios." });
+  }
 
   try {
     const novaNoticia = await News.create({
       title,
       content,
-      category: category || "geral",
-      tags: tags || [],
+      category: typeof category === "string" ? category : "geral",
+      tags: Array.isArray(tags) ? tags : [],
       hidden: false,
-      author: user.id
+      author: user.userId,   // ← usa userId, não id
     });
 
-    res.status(201).json({ data: novaNoticia });
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    return res.status(201).json({ data: novaNoticia });
   } catch (error) {
-    res.status(500).json({ error: "Erro interno." });
+    console.error("Erro criando notícia:", error);
+    return res.status(500).json({ error: "Erro interno." });
   }
 }
