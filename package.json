@@ -1,4 +1,7 @@
 {
+    "overrides": {
+    "node-domexception": "2.0.0"
+  },
   "name": "meu-projeto-news",
   "version": "0.1.0",
   "private": true,
