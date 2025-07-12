@@ -8,10 +8,8 @@ export default function Document() {
         {/* Insira aqui sua Publisher ID */}
        
       </Head>
-      <body>
         <Main />
         <NextScript />
-      </body>
     </Html>
   );
 }

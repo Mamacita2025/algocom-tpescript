@@ -1,6 +1,7 @@
 // pages/sobre.tsx
-
 import React from "react";
+import Image from "next/image";
+
 export default function SobrePage() {
   const currentYear = new Date().getFullYear();
 
@@ -122,12 +123,14 @@ export default function SobrePage() {
           ].map(({ name, role, img }) => (
             <div className="col-sm-6 col-lg-4" key={name}>
               <div className="card h-100 border-0 shadow-sm">
-                <img
-                  src={img}
-                  className="card-img-top"
-                  alt={name}
-                  style={{ objectFit: "cover", height: "240px" }}
-                />
+                <div style={{ position: "relative", width: "100%", height: 240 }}>
+                  <Image
+                    src={img}
+                    alt={name}
+                    fill
+                    style={{ objectFit: "cover", borderRadius: "0.25rem 0.25rem 0 0" }}
+                  />
+                </div>
                 <div className="card-body text-center">
                   <h3 className="h5 mb-1">{name}</h3>
                   <p className="text-muted small">{role}</p>

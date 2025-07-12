@@ -1,6 +1,5 @@
 // pages/noticias.tsx
-
-import { useEffect, useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import NewsCard from "@/components/NewsCard";
 import NewsFeed from "@/components/NewsFeed";
 
@@ -29,7 +28,8 @@ export default function NoticiasPage() {
 
   const PAGE_SIZE = 10;
 
-  const loadLocalNews = async () => {
+  // 1) Encapsula a função em useCallback, com todas as dependências necessárias
+  const loadLocalNews = useCallback(async () => {
     setLoading(true);
     try {
       const params = new URLSearchParams();
@@ -38,28 +38,35 @@ export default function NoticiasPage() {
       if (search) params.append("q", search);
 
       const res = await fetch(`/api/news/list?${params}`);
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
+      const data = await res.json() as { news: LocalNews[]; error?: string };
+      if (!res.ok) throw new Error(data.error || "Falha ao carregar notícias");
 
-      setLocalNews((prev) =>
+      setLocalNews(prev =>
         page === 1 ? data.news : [...prev, ...data.news]
       );
       setHasMore(data.news.length === PAGE_SIZE);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (err: any) {
-      setError(err.message);
+
+    } catch (err: unknown) {
+      // 2) Trata o unknown de forma segura
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError(String(err));
+      }
     } finally {
       setLoading(false);
     }
-  };
+  }, [page, filter, search]);
 
+  // 3) Quando filter ou search mudam, volta à página 1
   useEffect(() => {
     setPage(1);
   }, [filter, search]);
 
+  // 4) Chama loadLocalNews sempre que ela (e, por extensão, page/filter/search) mudar
   useEffect(() => {
     loadLocalNews();
-  }, [page, filter, search]);
+  }, [loadLocalNews]);
 
   return (
     <main style={containerStyle}>
@@ -70,14 +77,14 @@ export default function NoticiasPage() {
           <input
             type="text"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={e => setSearch(e.target.value)}
             placeholder="🔍 Buscar notícias..."
             style={inputStyle}
           />
 
           <select
             value={filter}
-            onChange={(e) => setFilter(e.target.value)}
+            onChange={e => setFilter(e.target.value)}
             style={selectStyle}
           >
             <option value="">Todas as categorias</option>
@@ -93,7 +100,7 @@ export default function NoticiasPage() {
         {localNews.length > 0 ? (
           <>
             <div style={gridStyle}>
-              {localNews.map((n) => (
+              {localNews.map(n => (
                 <NewsCard
                   key={n._id}
                   id={n._id}
@@ -113,7 +120,7 @@ export default function NoticiasPage() {
 
             {hasMore && !loading && (
               <button
-                onClick={() => setPage((p) => p + 1)}
+                onClick={() => setPage(p => p + 1)}
                 style={loadMoreBtn}
               >
                 ➕ Carregar mais
