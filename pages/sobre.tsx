@@ -1,7 +1,6 @@
 // pages/sobre.tsx
 
 import React from "react";
-
 export default function SobrePage() {
   const currentYear = new Date().getFullYear();
 

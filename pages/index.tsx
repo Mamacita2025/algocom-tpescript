@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import NewsCard from "@/components/NewsCard";
-
+import AdSense from "@/components/AdSense";
 type NewsItem = {
   _id: string;
   title: string;
@@ -33,7 +33,10 @@ export default function Home() {
   return (
     <main style={mainStyle}>
       <h1 style={titleStyle}>📰 Últimas Notícias</h1>
-
+      {/* Anúncio acima dos cards */}
+      <div className="ad-container mb-4">
+        <AdSense slot={process.env.NEXT_PUBLIC_ADSENSE_SLOT!} />
+      </div>
       <div style={gridStyle}>
         {news.map((item) => (
           <div key={item._id} style={cardWrapper}>

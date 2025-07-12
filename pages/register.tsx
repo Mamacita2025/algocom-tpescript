@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
-
 export default function Register() {
   const router = useRouter();
   const [form, setForm] = useState({
@@ -59,6 +58,7 @@ export default function Register() {
       <div style={cardStyle}>
         <h1 style={titleStyle}>🧑‍💻 Criar Conta</h1>
 
+        
         {error && <div style={errorStyle}>{error}</div>}
         {success && <div style={successStyle}>{success}</div>}
 

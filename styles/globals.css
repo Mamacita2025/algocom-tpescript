@@ -24,3 +24,39 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+/* global.css ou module CSS */
+.adsbygoogle {
+  display: block !important;
+  width: 100% !important;         /* ocupa todo o espaço do pai */
+  min-width: 320px;               /* pelo menos 320px para anúncios responsivos */
+  /* opcional: min-height para reservar espaço */
+  min-height: 150px;
+}
+html, body {
+  overflow-x: hidden;
+}
+
+.adsbygoogle,
+.ad-container {
+  max-width: 100%;       /* nunca excede a largura da tela */
+  box-sizing: border-box;/* inclui padding/border no cálculo */
+  margin: 0 auto;        /* centraliza */
+}
+@media (max-width: 600px) {
+  .adsbygoogle {
+    width: 100% !important; /* ocupa toda a largura em telas pequenas */
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -35,7 +35,6 @@ export default function NewsCard({
   const [likesCount, setLikesCount] = useState(likes);
   const [showComments, setShowComments] = useState(false);
 
-  // limpa HTML/JS e gera resumo
   const texto = sanitize(content);
   const resumo = texto.length > 160 ? texto.slice(0, 160) + "…" : texto;
 
@@ -59,7 +58,6 @@ export default function NewsCard({
     }
   }
 
-  // Wrapper para tornar o card clicável
   const CardInner = (
     <div style={cardStyle}>
       {image && (
@@ -69,7 +67,9 @@ export default function NewsCard({
       )}
 
       <div style={contentWrapper}>
-        <h3 style={titleStyle}>{title}</h3>
+        <h3 style={titleStyle} title={title}>
+          {title}
+        </h3>
         <p style={textStyle}>{resumo}</p>
       </div>
 
@@ -114,9 +114,6 @@ export default function NewsCard({
   );
 }
 
-// ========================
-// Sanitização
-// ========================
 function sanitize(text: string): string {
   return text
     .replace(/window\.open.*?;/gi, "")
@@ -128,10 +125,10 @@ function sanitize(text: string): string {
 }
 
 // ========================
-// Estilos inline
+// Estilos inline ajustados
 // ========================
 const wrapperStyle: React.CSSProperties = {
-  width: "100%",          // ocupa toda a célula do grid
+  width: "100%",
 };
 
 const linkStyle: React.CSSProperties = {
@@ -144,40 +141,57 @@ const cardStyle: React.CSSProperties = {
   display: "flex",
   flexDirection: "column",
   background: "#fff",
-  borderRadius: "10px",
+  borderRadius: 10,
   boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
   overflow: "hidden",
   width: "100%",
   height: "100%",
   transition: "transform 0.2s, box-shadow 0.2s",
-  cursor: "default",
 };
+
 const imgWrapperStyle: React.CSSProperties = {
   width: "100%",
-  height: "180px",
+  height: 180,
   overflow: "hidden",
+  flexShrink: 0,
 };
+
 const imgStyle: React.CSSProperties = {
   width: "100%",
   height: "100%",
   objectFit: "cover",
 };
+
 const contentWrapper: React.CSSProperties = {
   padding: "1rem",
   flexGrow: 1,
+  display: "flex",
+  flexDirection: "column",
 };
+
 const titleStyle: React.CSSProperties = {
   fontSize: "1.1rem",
   margin: "0 0 0.5rem",
   color: "#222",
   lineHeight: 1.3,
+
+  whiteSpace: "nowrap",
+  overflow: "hidden",
+  textOverflow: "ellipsis",
 };
+
 const textStyle: React.CSSProperties = {
   fontSize: "0.9rem",
   color: "#555",
   margin: 0,
   lineHeight: 1.4,
+
+  display: "-webkit-box",
+  WebkitLineClamp: 3,
+  WebkitBoxOrient: "vertical",
+  overflow: "hidden",
 };
+
 const metaStyle: React.CSSProperties = {
   display: "flex",
   justifyContent: "space-between",
@@ -185,6 +199,7 @@ const metaStyle: React.CSSProperties = {
   fontSize: "0.8rem",
   color: "#777",
 };
+
 const actionsStyle: React.CSSProperties = {
   display: "flex",
   gap: "0.5rem",
@@ -194,7 +209,7 @@ const actionsStyle: React.CSSProperties = {
 const baseBtn: React.CSSProperties = {
   flex: 1,
   padding: "0.5rem",
-  borderRadius: "6px",
+  borderRadius: 6,
   border: "1px solid",
   background: "#fff",
   fontSize: "0.9rem",
