@@ -1,5 +1,7 @@
+// components/NewsCard.tsx
 "use client";
-import { useState } from "react";
+
+import React, { useState } from "react";
 import SafeImage from "@/components/SafeImage";
 import { useAuth } from "@/context/AuthContext";
 import CommentsModal from "./CommentsModal";
@@ -10,8 +12,8 @@ type Props = {
   content: string;
   author?: string;
   views: number;
-  likes: number;
-  likedBy: string[];
+  likes?: number;
+  likedBy?: string[];
   commentsCount: number;
   image?: string | null;
   url?: string;
@@ -29,18 +31,29 @@ export default function NewsCard({
   image,
   url,
 }: Props) {
-  const { user } = useAuth();
-  const currentUserId = user?.userId || "";
-  const [isLiked, setIsLiked] = useState(likedBy.includes(currentUserId));
-  const [likesCount, setLikesCount] = useState(likes);
+  const { user, token } = useAuth();
+  const currentUserId = user?.userId ?? "";
+
+  const [isLiked, setIsLiked] = useState(likedBy?.includes(currentUserId));
+  const [likesCount, setLikesCount] = useState<number>(likes? likes : 0);
   const [showComments, setShowComments] = useState(false);
 
   const texto = sanitize(content);
   const resumo = texto.length > 160 ? texto.slice(0, 160) + "…" : texto;
 
-  async function toggleLike() {
+  // Clicou no botão de curtir
+  async function handleLike(
+    e: React.MouseEvent<HTMLButtonElement, MouseEvent>
+  ) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!token) {
+      alert("Você precisa estar logado para curtir.");
+      return;
+    }
+
     try {
-      const token = localStorage.getItem("token");
       const res = await fetch(`/api/news/${id}/like`, {
         method: isLiked ? "DELETE" : "POST",
         headers: {
@@ -58,6 +71,15 @@ export default function NewsCard({
     }
   }
 
+  // Clicou no botão de comentários
+  function handleCommentsClick(
+    e: React.MouseEvent<HTMLButtonElement, MouseEvent>
+  ) {
+    e.preventDefault();
+    e.stopPropagation();
+    setShowComments(true);
+  }
+
   const CardInner = (
     <div style={cardStyle}>
       {image && (
@@ -65,27 +87,21 @@ export default function NewsCard({
           <SafeImage src={image} alt={title} style={imgStyle} />
         </div>
       )}
-
       <div style={contentWrapper}>
         <h3 style={titleStyle} title={title}>
           {title}
         </h3>
         <p style={textStyle}>{resumo}</p>
       </div>
-
       <div style={metaStyle}>
-        <span>👤 {author || "Anônimo"}</span>
+        <span>👤 {author ?? "Anônimo"}</span>
         <span>👁️ {views}</span>
       </div>
-
       <div style={actionsStyle}>
-        <button style={likeBtnStyle} onClick={toggleLike}>
+        <button style={likeBtnStyle} onClick={handleLike}>
           {isLiked ? "💔 Descurtir" : "❤️ Curtir"} ({likesCount})
         </button>
-        <button
-          style={commentBtnStyle}
-          onClick={() => setShowComments(true)}
-        >
+        <button style={commentBtnStyle} onClick={handleCommentsClick}>
           💬 Comentários ({commentsCount})
         </button>
       </div>
@@ -106,7 +122,6 @@ export default function NewsCard({
       ) : (
         CardInner
       )}
-
       {showComments && (
         <CommentsModal newsId={id} onClose={() => setShowComments(false)} />
       )}
@@ -114,6 +129,7 @@ export default function NewsCard({
   );
 }
 
+// Sanitização simples de HTML/JS
 function sanitize(text: string): string {
   return text
     .replace(/window\.open.*?;/gi, "")
@@ -125,18 +141,14 @@ function sanitize(text: string): string {
 }
 
 // ========================
-// Estilos inline ajustados
+// Estilos inline (como antes)
 // ========================
-const wrapperStyle: React.CSSProperties = {
-  width: "100%",
-};
-
+const wrapperStyle: React.CSSProperties = { width: "100%" };
 const linkStyle: React.CSSProperties = {
   textDecoration: "none",
   color: "inherit",
   display: "block",
 };
-
 const cardStyle: React.CSSProperties = {
   display: "flex",
   flexDirection: "column",
@@ -148,50 +160,42 @@ const cardStyle: React.CSSProperties = {
   height: "100%",
   transition: "transform 0.2s, box-shadow 0.2s",
 };
-
 const imgWrapperStyle: React.CSSProperties = {
   width: "100%",
   height: 180,
   overflow: "hidden",
   flexShrink: 0,
 };
-
 const imgStyle: React.CSSProperties = {
   width: "100%",
   height: "100%",
   objectFit: "cover",
 };
-
 const contentWrapper: React.CSSProperties = {
   padding: "1rem",
   flexGrow: 1,
   display: "flex",
   flexDirection: "column",
 };
-
 const titleStyle: React.CSSProperties = {
   fontSize: "1.1rem",
   margin: "0 0 0.5rem",
   color: "#222",
   lineHeight: 1.3,
-
   whiteSpace: "nowrap",
   overflow: "hidden",
   textOverflow: "ellipsis",
 };
-
 const textStyle: React.CSSProperties = {
   fontSize: "0.9rem",
   color: "#555",
   margin: 0,
   lineHeight: 1.4,
-
   display: "-webkit-box",
   WebkitLineClamp: 3,
   WebkitBoxOrient: "vertical",
   overflow: "hidden",
 };
-
 const metaStyle: React.CSSProperties = {
   display: "flex",
   justifyContent: "space-between",
@@ -199,13 +203,11 @@ const metaStyle: React.CSSProperties = {
   fontSize: "0.8rem",
   color: "#777",
 };
-
 const actionsStyle: React.CSSProperties = {
   display: "flex",
   gap: "0.5rem",
   padding: "0.75rem 1rem 1rem",
 };
-
 const baseBtn: React.CSSProperties = {
   flex: 1,
   padding: "0.5rem",
@@ -216,13 +218,11 @@ const baseBtn: React.CSSProperties = {
   cursor: "pointer",
   transition: "background 0.2s",
 };
-
 const likeBtnStyle: React.CSSProperties = {
   ...baseBtn,
   borderColor: "#e0245e",
   color: "#e0245e",
 };
-
 const commentBtnStyle: React.CSSProperties = {
   ...baseBtn,
   borderColor: "#0070f3",

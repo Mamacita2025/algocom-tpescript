@@ -18,6 +18,8 @@ interface NewsDTO {
   createdAt: string;
   author?: { username: string; avatar: string };
   commentsCount: number;
+  likes: number;
+  likedBy: string[];
 }
 
 /** Estrutura de artigo da NewsAPI */
@@ -62,7 +64,7 @@ export default async function handler(
   }
 
   try {
-    // 1) Notícias locais (com aggregate para commentsCount)
+    // 1) Notícias locais com contagem de comentários
     const localRaw = await News.aggregate([
       { $match: filters },
       { $sort: { createdAt: -1 } },
@@ -80,13 +82,13 @@ export default async function handler(
       { $project: { commentsArr: 0 } },
     ]);
 
-    // 2) Popula o author
+    // 2) Popula author
     const localPopulated = await User.populate(localRaw, {
       path: "author",
       select: "username avatar",
     });
 
-    // 3) Map localRaw → NewsDTO
+    // 3) Mapeia para NewsDTO (incluindo likes e likedBy)
     const localNews: NewsDTO[] = localPopulated.map((doc) => ({
       _id: doc._id.toString(),
       title: doc.title,
@@ -100,6 +102,9 @@ export default async function handler(
         : undefined,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       commentsCount: (doc as any).commentsCount || 0,
+      likes: doc.likes,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      likedBy: doc.likedBy.map((id: { toString: () => any; }) => id.toString()),
     }));
 
     // 4) Manchetes externas via NewsAPI
@@ -108,7 +113,7 @@ export default async function handler(
       { params: { sources: "techcrunch", apiKey, pageSize: limit, q } }
     );
 
-    // 5) Map externo → NewsDTO
+    // 5) Mapeia externo para NewsDTO
     const externalNews: NewsDTO[] = [];
     for (const art of resp.data.articles) {
       const raw = await News.findOneAndUpdate<INews>(
@@ -129,8 +134,10 @@ export default async function handler(
         .exec();
       if (!raw) continue;
 
-      const count = await Comment.countDocuments({ newsId: raw._id });
-      // deixe o TS inferir as props sem declarar `: NewsDTO`
+      const commentsCount = await Comment.countDocuments({
+        newsId: raw._id,
+      });
+
       externalNews.push({
         _id: raw._id.toString(),
         title: raw.title,
@@ -139,11 +146,13 @@ export default async function handler(
         url: raw.url!,
         category: raw.category ?? "external",
         createdAt: raw.createdAt.toISOString(),
-        commentsCount: count,
+        author: undefined,
+        commentsCount,
+        likes: raw.likes,
+        likedBy: raw.likedBy.map((id) => id.toString()),
       });
     }
 
-    // 6) Retorna tudo
     return res.status(200).json({ news: [...localNews, ...externalNews] });
   } catch (error: unknown) {
     console.error("Erro em /api/news/list:", error);
