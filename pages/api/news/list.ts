@@ -1,23 +1,48 @@
 // pages/api/news/list.ts
-
-import axios from "axios";
 import type { NextApiRequest, NextApiResponse } from "next";
+import axios from "axios";
 import { connectDB } from "@/lib/mongodb";
-import User from "@/models/User";
 import News, { INews } from "@/models/News";
+import User from "@/models/User";
 import Comment from "@/models/Comment";
-import { FilterQuery } from "mongoose";
+import type { FilterQuery } from "mongoose";
+
+/** DTO enviado ao cliente */
+interface NewsDTO {
+  _id: string;
+  title: string;
+  content: string;
+  image?: string | null;
+  url: string;
+  category?: string;
+  createdAt: string;
+  author?: { username: string; avatar: string };
+  commentsCount: number;
+}
+
+/** Estrutura de artigo da NewsAPI */
+interface NewsApiArticle {
+  title: string;
+  description?: string;
+  content?: string;
+  url: string;
+  urlToImage?: string;
+  publishedAt: string;
+}
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse
+  res: NextApiResponse<{ news?: NewsDTO[]; error?: string }>
 ) {
   await connectDB();
+
   const { category, q, page = "1" } = req.query;
   const filters: FilterQuery<INews> = {};
 
-  if (category && typeof category === "string") filters.category = category;
-  if (q && typeof q === "string") {
+  if (typeof category === "string" && category) {
+    filters.category = category;
+  }
+  if (typeof q === "string" && q) {
     filters.$or = [
       { title: { $regex: q, $options: "i" } },
       { content: { $regex: q, $options: "i" } },
@@ -25,14 +50,20 @@ export default async function handler(
   }
 
   const pageNum = Math.max(1, parseInt(page as string, 10) || 1);
-  const limit = 10,
-    skip = (pageNum - 1) * limit;
-  console.log("URI:", process.env.MONGODB_URI?.slice(0, 30));
-  console.log("NEWSAPI_KEY definida?", !!process.env.NEWSAPI_KEY);
+  const limit = 10;
+  const skip = (pageNum - 1) * limit;
+
+  const apiKey = process.env.NEWSAPI_KEY;
+  if (!apiKey) {
+    console.error("Missing NEWSAPI_KEY");
+    return res
+      .status(500)
+      .json({ error: "Chave da NewsAPI não encontrada no ambiente" });
+  }
 
   try {
-    // Busca local com aggregate para commentsCount
-    const localAgg = await News.aggregate([
+    // 1) Notícias locais (com aggregate para commentsCount)
+    const localRaw = await News.aggregate([
       { $match: filters },
       { $sort: { createdAt: -1 } },
       { $skip: skip },
@@ -49,25 +80,38 @@ export default async function handler(
       { $project: { commentsArr: 0 } },
     ]);
 
-    // popula author
-    const localNews = await User.populate(localAgg, {
+    // 2) Popula o author
+    const localPopulated = await User.populate(localRaw, {
       path: "author",
       select: "username avatar",
     });
 
-    // Manchetes externas…
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const externalWithCounts: Array<any> = [];
-    const resp = await axios.get("https://newsapi.org/v2/top-headlines", {
-      params: {
-        sources: "techcrunch",
-        apiKey: process.env.NEWSAPI_KEY,
-        pageSize: limit,
-        q,
-      },
-    });
+    // 3) Map localRaw → NewsDTO
+    const localNews: NewsDTO[] = localPopulated.map((doc) => ({
+      _id: doc._id.toString(),
+      title: doc.title,
+      content: doc.content,
+      image: doc.image ?? null,
+      url: doc.url!,
+      category: doc.category ?? "local",
+      createdAt: doc.createdAt.toISOString(),
+      author: doc.author
+        ? { username: doc.author.username, avatar: doc.author.avatar }
+        : undefined,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      commentsCount: (doc as any).commentsCount || 0,
+    }));
+
+    // 4) Manchetes externas via NewsAPI
+    const resp = await axios.get<{ articles: NewsApiArticle[] }>(
+      "https://newsapi.org/v2/top-headlines",
+      { params: { sources: "techcrunch", apiKey, pageSize: limit, q } }
+    );
+
+    // 5) Map externo → NewsDTO
+    const externalNews: NewsDTO[] = [];
     for (const art of resp.data.articles) {
-      const doc = await News.findOneAndUpdate(
+      const raw = await News.findOneAndUpdate<INews>(
         { url: art.url },
         {
           $setOnInsert: {
@@ -80,19 +124,30 @@ export default async function handler(
           },
         },
         { upsert: true, new: true, setDefaultsOnInsert: true }
-      ).lean();
+      )
+        .lean()
+        .exec();
+      if (!raw) continue;
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const cnt = await Comment.countDocuments({ newsId: (doc as any)._id });
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      externalWithCounts.push({ ...(doc as any), commentsCount: cnt });
+      const count = await Comment.countDocuments({ newsId: raw._id });
+      // deixe o TS inferir as props sem declarar `: NewsDTO`
+      externalNews.push({
+        _id: raw._id.toString(),
+        title: raw.title,
+        content: raw.content,
+        image: raw.image ?? null,
+        url: raw.url!,
+        category: raw.category ?? "external",
+        createdAt: raw.createdAt.toISOString(),
+        commentsCount: count,
+      });
     }
 
-    return res.status(200).json({
-      news: [...localNews, ...externalWithCounts],
-    });
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({ error: "Erro ao carregar notícias." });
+    // 6) Retorna tudo
+    return res.status(200).json({ news: [...localNews, ...externalNews] });
+  } catch (error: unknown) {
+    console.error("Erro em /api/news/list:", error);
+    const msg = error instanceof Error ? error.message : "Erro desconhecido";
+    return res.status(500).json({ error: msg });
   }
 }
