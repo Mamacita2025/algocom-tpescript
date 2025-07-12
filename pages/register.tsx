@@ -34,7 +34,12 @@ export default function Register() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
       });
-      const data = await res.json();
+      const isJson = res.headers.get("content-type")?.includes("application/json");
+      
+      if (!isJson) {
+        throw new Error("Resposta inválida do servidor.");
+      }
+      const data = isJson ? await res.json() : { error: res.statusText };
       if (!res.ok) throw new Error(data.error || "Erro desconhecido");
 
       setSuccess("✅ Cadastro realizado com sucesso!");

@@ -8,7 +8,10 @@ import News, { INews } from "@/models/News";
 import Comment from "@/models/Comment";
 import { FilterQuery } from "mongoose";
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse
+) {
   await connectDB();
   const { category, q, page = "1" } = req.query;
   const filters: FilterQuery<INews> = {};
@@ -22,7 +25,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   const pageNum = Math.max(1, parseInt(page as string, 10) || 1);
-  const limit = 10, skip = (pageNum - 1) * limit;
+  const limit = 10,
+    skip = (pageNum - 1) * limit;
+  console.log("URI:", process.env.MONGODB_URI?.slice(0, 30));
+  console.log("NEWSAPI_KEY definida?", !!process.env.NEWSAPI_KEY);
 
   try {
     // Busca local com aggregate para commentsCount
@@ -53,7 +59,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const externalWithCounts: Array<any> = [];
     const resp = await axios.get("https://newsapi.org/v2/top-headlines", {
-      params: { sources: "techcrunch", apiKey: process.env.NEWSAPI_KEY, pageSize: limit, q },
+      params: {
+        sources: "techcrunch",
+        apiKey: process.env.NEWSAPI_KEY,
+        pageSize: limit,
+        q,
+      },
     });
     for (const art of resp.data.articles) {
       const doc = await News.findOneAndUpdate(
