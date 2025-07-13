@@ -12,6 +12,12 @@ export default function Footer() {
             📰 PortalNews
           </Link>
           <span style={copyStyle}>© {new Date().getFullYear()} MeuPortal. Todos os direitos reservados.</span>
+          <Link href='/politica-privacidade' style={logoStyle}>
+            Política de Privacidade
+          </Link>
+          <Link href='/termos-de-uso' style={logoStyle}>
+            Termos de uso
+          </Link>
         </div>
         <div style={socialStyle}>
           <a

@@ -2,25 +2,24 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
+import Image, { ImageProps } from "next/image";
 import type { CSSProperties } from "react";
 
-type SafeImageProps = {
+type SafeImageProps = Omit<ImageProps, "src"> & {
   src?: string | null;
-  alt?: string;
-  className?: string;
-  style?: CSSProperties;
   fallbackSrc?: string;
+  containerClassName?: string;
+  containerStyle?: CSSProperties;
 };
 
 export default function SafeImage({
   src,
-  alt = "Imagem",
-  className,
-  style,
   fallbackSrc = "/images/placeholder.jpg",
+  containerClassName,
+  containerStyle,
+  ...imageProps
 }: SafeImageProps) {
-  const [imgSrc, setImgSrc] = useState(src || fallbackSrc);
+  const [imgSrc, setImgSrc] = useState<string>(src || fallbackSrc);
 
   const handleError = () => {
     if (imgSrc !== fallbackSrc) {
@@ -28,13 +27,21 @@ export default function SafeImage({
     }
   };
 
+  // Se estiver usando 'fill', o container deve ter posição e dimensões flexíveis
+  // Caso contrário, usamos width/height vindos de props
+  const wrapperStyle: CSSProperties = {
+    position: "relative",
+    display: imageProps.fill ? "block" : "inline-block",
+    width: imageProps.fill ? "100%" : imageProps.width,
+    height: imageProps.fill ? "100%" : imageProps.height,
+    ...containerStyle,
+  };
+
   return (
-    <div className={className} style={{ position: "relative", ...style }}>
+    <div className={containerClassName} style={wrapperStyle}>
       <Image
+        {...imageProps}
         src={imgSrc}
-        alt={alt}
-        fill
-        style={{ objectFit: "cover" }}
         onError={handleError}
       />
     </div>

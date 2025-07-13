@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 // components/Navbar.tsx
 "use client";
 
@@ -16,10 +17,19 @@ export default function Navbar() {
   return (
     <nav className="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
       <div className="container">
-        <Link href="/" className="navbar-brand d-flex align-items-center">
-          <span className="fs-3">📰</span>
-          <span className="ms-2 fw-bold">MeuPortal</span>
-        </Link>
+          <Link
+        href="/"
+        style={{ display: "flex", alignItems: "center", textDecoration: "none" }}
+      >
+        <img
+          src="/logo.png"
+          alt="PortalNews"
+          width={160}
+          height={40}
+          
+          style={{ maxHeight: "40px", borderRadius: "5px" }}
+        />
+      </Link>
 
         <button
           className="navbar-toggler border-0"

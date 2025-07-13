@@ -5,6 +5,7 @@ import React, { useState } from "react";
 import SafeImage from "@/components/SafeImage";
 import { useAuth } from "@/context/AuthContext";
 import CommentsModal from "./CommentsModal";
+import ContentModal from "./ContentModal";
 
 type Props = {
   id: string;
@@ -17,6 +18,7 @@ type Props = {
   commentsCount: number;
   image?: string | null;
   url?: string;
+  isUrgente?: boolean;
 };
 
 export default function NewsCard({
@@ -25,34 +27,37 @@ export default function NewsCard({
   content,
   author,
   views,
-  likes,
-  likedBy,
+  likes = 0,
+  likedBy = [],
   commentsCount,
   image,
   url,
+  isUrgente = false,
 }: Props) {
   const { user, token } = useAuth();
   const currentUserId = user?.userId ?? "";
 
-  const [isLiked, setIsLiked] = useState(likedBy?.includes(currentUserId));
-  const [likesCount, setLikesCount] = useState<number>(likes? likes : 0);
-  const [showComments, setShowComments] = useState(false);
+  const [isLiked, setIsLiked] = useState(likedBy.includes(currentUserId));
+  const [likesCount, setLikesCount] = useState(likes);
+  const [commentsCountState, setCommentsCountState] =
+    useState(commentsCount);
 
-  const texto = sanitize(content);
+  const [showComments, setShowComments]     = useState(false);
+  const [showContent, setShowContent]       = useState(false);
+  const [fullContent, setFullContent]       = useState<string>(content);
+  const [loadingContent, setLoadingContent] = useState(false);
+  const [externalUrl, setExternalUrl]       = useState<string | null>(null);
+
+  const texto  = sanitize(content);
   const resumo = texto.length > 160 ? texto.slice(0, 160) + "…" : texto;
 
-  // Clicou no botão de curtir
-  async function handleLike(
-    e: React.MouseEvent<HTMLButtonElement, MouseEvent>
-  ) {
+  async function handleLike(e: React.MouseEvent<HTMLButtonElement>) {
     e.preventDefault();
     e.stopPropagation();
-
     if (!token) {
       alert("Você precisa estar logado para curtir.");
       return;
     }
-
     try {
       const res = await fetch(`/api/news/${id}/like`, {
         method: isLiked ? "DELETE" : "POST",
@@ -62,30 +67,69 @@ export default function NewsCard({
         },
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Falha ao curtir");
+      if (!res.ok) throw new Error(data.error ?? "Falha ao curtir");
       setIsLiked(!isLiked);
-      setLikesCount((c) => c + (isLiked ? -1 : 1));
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (err: any) {
-      alert(err.message);
+      setLikesCount(c => c + (isLiked ? -1 : 1));
+    } catch (err) {
+      alert(err instanceof Error ? err.message : String(err));
     }
   }
 
-  // Clicou no botão de comentários
-  function handleCommentsClick(
-    e: React.MouseEvent<HTMLButtonElement, MouseEvent>
-  ) {
+  function handleCommentsClick(e: React.MouseEvent<HTMLButtonElement>) {
     e.preventDefault();
     e.stopPropagation();
     setShowComments(true);
   }
 
+  async function handleCardClick() {
+    setShowContent(true);
+    setLoadingContent(true);
+    setExternalUrl(null);
+
+    try {
+      if (url) {
+        // externa (inclui feed): scraping
+        const scrapeRes = await fetch(
+          `/api/extract?url=${encodeURIComponent(url)}`
+        );
+        if (!scrapeRes.ok) throw new Error("Falha ao extrair conteúdo");
+        const { content: scraped } = await scrapeRes.json();
+        setFullContent(scraped);
+        setExternalUrl(url);
+      } else {
+        // local: fetch do nosso backend
+        const res = await fetch(`/api/news/${id}`);
+        if (!res.ok) throw new Error("Falha ao buscar notícia completa");
+        const { data } = await res.json();
+        setFullContent(data.content);
+      }
+    } catch (err) {
+      console.error("Erro ao buscar conteúdo completo", err);
+      setFullContent(content);
+    } finally {
+      setLoadingContent(false);
+    }
+  }
+
+  function handleCommentAdded() {
+    setCommentsCountState(c => c + 1);
+  }
+
   const CardInner = (
-    <div style={cardStyle}>
+    <div
+      style={{
+        ...cardStyle,
+        border: isUrgente ? "2px solid red" : undefined,
+      }}
+      onClick={handleCardClick}
+    >
       {image && (
-        <div style={imgWrapperStyle}>
-          <SafeImage src={image} alt={title} style={imgStyle} />
-        </div>
+        <SafeImage
+          src={image}
+          alt={title}
+          fill
+          containerStyle={imgWrapperStyle}
+        />
       )}
       <div style={contentWrapper}>
         <h3 style={titleStyle} title={title}>
@@ -102,7 +146,7 @@ export default function NewsCard({
           {isLiked ? "💔 Descurtir" : "❤️ Curtir"} ({likesCount})
         </button>
         <button style={commentBtnStyle} onClick={handleCommentsClick}>
-          💬 Comentários ({commentsCount})
+          💬 Comentários ({commentsCountState})
         </button>
       </div>
     </div>
@@ -110,26 +154,32 @@ export default function NewsCard({
 
   return (
     <div style={wrapperStyle}>
-      {url ? (
-        <a
-          href={url}
-          target="_blank"
-          rel="noopener noreferrer"
-          style={linkStyle}
-        >
-          {CardInner}
-        </a>
-      ) : (
-        CardInner
-      )}
+      {CardInner}
+
       {showComments && (
-        <CommentsModal newsId={id} onClose={() => setShowComments(false)} />
+        <CommentsModal
+          newsId={id}
+          onClose={() => setShowComments(false)}
+          onCommentAdded={handleCommentAdded}
+        />
+      )}
+
+      {showContent && (
+        <ContentModal
+          title={title}
+          content={
+            loadingContent
+              ? "<p>Carregando conteúdo…</p>"
+              : fullContent
+          }
+          onClose={() => setShowContent(false)}
+          externalUrl={externalUrl}
+        />
       )}
     </div>
   );
 }
 
-// Sanitização simples de HTML/JS
 function sanitize(text: string): string {
   return text
     .replace(/window\.open.*?;/gi, "")
@@ -140,91 +190,78 @@ function sanitize(text: string): string {
     .trim();
 }
 
-// ========================
-// Estilos inline (como antes)
-// ========================
+// ===== estilos inline =====
 const wrapperStyle: React.CSSProperties = { width: "100%" };
-const linkStyle: React.CSSProperties = {
-  textDecoration: "none",
-  color: "inherit",
-  display: "block",
-};
 const cardStyle: React.CSSProperties = {
-  display: "flex",
+  cursor:        "pointer",
+  display:       "flex",
   flexDirection: "column",
-  background: "#fff",
-  borderRadius: 10,
-  boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-  overflow: "hidden",
-  width: "100%",
-  height: "100%",
-  transition: "transform 0.2s, box-shadow 0.2s",
+  background:    "#fff",
+  borderRadius:  10,
+  boxShadow:     "0 2px 8px rgba(0,0,0,0.1)",
+  overflow:      "hidden",
+  transition:    "transform 0.2s, box-shadow 0.2s",
 };
 const imgWrapperStyle: React.CSSProperties = {
-  width: "100%",
-  height: 180,
-  overflow: "hidden",
+  position:   "relative",
+  width:      "100%",
+  height:     180,
   flexShrink: 0,
 };
-const imgStyle: React.CSSProperties = {
-  width: "100%",
-  height: "100%",
-  objectFit: "cover",
-};
 const contentWrapper: React.CSSProperties = {
-  padding: "1rem",
-  flexGrow: 1,
-  display: "flex",
-  flexDirection: "column",
+  padding:      "1rem",
+  flexGrow:     1,
+  display:      "flex",
+  flexDirection:"column",
 };
 const titleStyle: React.CSSProperties = {
-  fontSize: "1.1rem",
-  margin: "0 0 0.5rem",
-  color: "#222",
-  lineHeight: 1.3,
-  whiteSpace: "nowrap",
-  overflow: "hidden",
+  fontSize:     "1.1rem",
+  margin:       "0 0 0.5rem",
+  color:        "#222",
+  lineHeight:   1.3,
+  whiteSpace:   "nowrap",
+  overflow:     "hidden",
   textOverflow: "ellipsis",
 };
 const textStyle: React.CSSProperties = {
-  fontSize: "0.9rem",
-  color: "#555",
-  margin: 0,
-  lineHeight: 1.4,
-  display: "-webkit-box",
+  fontSize:        "0.9rem",
+  color:           "#555",
+  margin:          0,
+  lineHeight:      1.4,
+  display:         "-webkit-box",
   WebkitLineClamp: 3,
   WebkitBoxOrient: "vertical",
-  overflow: "hidden",
+  overflow:        "hidden",
 };
 const metaStyle: React.CSSProperties = {
-  display: "flex",
+  display:        "flex",
   justifyContent: "space-between",
-  padding: "0 1rem",
-  fontSize: "0.8rem",
-  color: "#777",
+  padding:        "0 1rem",
+  fontSize:       "0.8rem",
+  color:          "#777",
 };
 const actionsStyle: React.CSSProperties = {
   display: "flex",
-  gap: "0.5rem",
+  gap:     "0.5rem",
   padding: "0.75rem 1rem 1rem",
 };
 const baseBtn: React.CSSProperties = {
-  flex: 1,
-  padding: "0.5rem",
+  flex:         1,
+  padding:      "0.5rem",
   borderRadius: 6,
-  border: "1px solid",
-  background: "#fff",
-  fontSize: "0.9rem",
-  cursor: "pointer",
-  transition: "background 0.2s",
+  border:       "1px solid",
+  background:   "#fff",
+  fontSize:     "0.9rem",
+  cursor:       "pointer",
+  transition:   "background 0.2s",
 };
 const likeBtnStyle: React.CSSProperties = {
   ...baseBtn,
   borderColor: "#e0245e",
-  color: "#e0245e",
+  color:       "#e0245e",
 };
 const commentBtnStyle: React.CSSProperties = {
   ...baseBtn,
   borderColor: "#0070f3",
-  color: "#0070f3",
+  color:       "#0070f3",
 };
