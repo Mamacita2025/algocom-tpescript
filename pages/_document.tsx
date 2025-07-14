@@ -5,8 +5,7 @@ export default function Document() {
   return (
     <Html lang="pt-BR">
       <Head>
-        {/* Insira aqui sua Publisher ID */}
-       
+        {/* Insira aqui sua Publisher ID */}  
       </Head>
         <Main />
         <NextScript />

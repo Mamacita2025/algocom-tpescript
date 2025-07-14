@@ -1,0 +1,112 @@
+/* components/Navbar.module.css */
+
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #222;
+  color: #fff;
+  padding: 0.5rem 1rem;
+  position: relative;
+  z-index: 1000;
+}
+
+.brand {
+  font-size: 1.25rem;
+  font-weight: bold;
+}
+
+.toggle {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+/* menu fechado no mobile */
+.menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: #222;
+  list-style: none;
+  padding: 1rem;
+  margin: 0;
+  display: none;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* quando aberto */
+.menuOpen {
+  display: flex;
+}
+
+/* itens de menu */
+.menuItem a {
+  color: #fff;
+  text-decoration: none;
+  padding: 0.5rem;
+  display: block;
+}
+
+.menuItem a:hover,
+.menuItem a.active {
+  background: rgba(255,255,255,0.1);
+  border-radius: 4px;
+}
+
+/* ações de autenticação */
+.auth {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.auth a,
+.auth button {
+  display: block;
+  text-align: center;
+  color: #fff;
+  background: transparent;
+  border: 1px solid #fff;
+  padding: 0.4rem;
+  border-radius: 4px;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.auth button:hover,
+.auth a:hover {
+  background: rgba(255,255,255,0.1);
+}
+
+/* desktop >= 768px */
+@media (min-width: 768px) {
+  .toggle {
+    display: none;
+  }
+
+  .menu {
+    position: static;
+    display: flex !important;
+    flex-direction: row;
+    align-items: center;
+    gap: 1rem;
+    padding: 0;
+    background: transparent;
+  }
+
+  .auth {
+    flex-direction: row;
+    margin-top: 0;
+    gap: 0.5rem;
+  }
+
+  .menuItem {
+    margin: 0;
+  }
+}

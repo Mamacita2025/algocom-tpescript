@@ -1,0 +1,40 @@
+/* styles/Home.module.css */
+
+.centered {
+  text-align: center;
+  margin-top: 2rem;
+}
+
+.error {
+  color: red;
+}
+
+.main {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+.title {
+  font-size: 2rem;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.grid {
+  display: grid;
+  gap: 1.5rem;
+  /* desktop/tablet: cards de 300px mínimo */
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+}
+
+.cardWrapper {
+  display: flex;
+}
+
+/* mobile: 1 coluna */
+@media (max-width: 600px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}

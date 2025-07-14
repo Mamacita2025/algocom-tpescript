@@ -14,10 +14,7 @@ export default function Layout({ children }: Props) {
 
       {/* Conteúdo da página */}
       <main style={{
-        flex: 1,
-        padding: "2rem",
-        maxWidth: "800px",
-        margin: "0 auto"
+       
       }}>
         {children}
       </main>

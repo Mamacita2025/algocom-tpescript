@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import Head from "next/head";
 import Script from "next/script";
 import "bootstrap/dist/css/bootstrap.min.css";
-
+import "@/styles/globals.css";
 import Layout from "@/components/Layout";
 import { AuthProvider } from "@/context/AuthContext";
 import AdSense from "@/components/AdSense";
@@ -28,6 +28,12 @@ export default function MyApp({ Component, pageProps }: AppProps) {
           name="google-adsense-account"
           content={ADSENSE_CLIENT}
         />
+        <meta
+          name="google-adsense-slot"
+          content={ADSENSE_SLOT}
+        />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+
       </Head>
 
       <Script
@@ -36,12 +42,11 @@ export default function MyApp({ Component, pageProps }: AppProps) {
         crossOrigin="anonymous"
       />
 
-      <main >
         <Layout>
-          <AdSense slot={ADSENSE_SLOT} />
+          
           <Component {...pageProps} />
+          <AdSense slot={ADSENSE_SLOT} />
         </Layout>
-      </main>
       <FloatingAd />
     </AuthProvider>
   );

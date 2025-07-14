@@ -1,4 +1,6 @@
 // components/AdSense.tsx
+"use client";
+
 import { useEffect, useRef } from "react";
 
 interface AdSenseProps {
@@ -8,21 +10,14 @@ interface AdSenseProps {
 export default function AdSense({
   slot = process.env.NEXT_PUBLIC_ADSENSE_SLOT!,
 }: AdSenseProps) {
-  // usaremos any para ref em <ins>, pois HTMLModElement pode ser pouco conhecido
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const insRef = useRef<any>(null);
+const insRef = useRef<HTMLModElement>(null);
 
   useEffect(() => {
     const el = insRef.current;
-    if (!el) return;
+    if (!el || el.getAttribute("data-ad-injected") === "true") return;
 
-    // garante que só injetaremos uma única vez
-    if (el.getAttribute("data-ad-injected") === "true") return;
+   
 
-    window.adsbygoogle = window.adsbygoogle || [];
-    window.adsbygoogle.push({});
-
-    // marca como injetado pra não repetir
     el.setAttribute("data-ad-injected", "true");
   }, []);
 
@@ -34,14 +29,15 @@ export default function AdSense({
         display: "block",
         textAlign: "center",
         width: "100%",
-         boxSizing: "border-box",
-        minWidth: 300,
+        boxSizing: "border-box",
+        minWidth: 0,
         minHeight: 150,
+        height: "auto",
       }}
       data-ad-client={process.env.NEXT_PUBLIC_ADSENSE_CLIENT}
       data-ad-slot={slot}
       data-ad-format="auto"
       data-full-width-responsive="true"
-    />
+    ></ins>
   );
 }

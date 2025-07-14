@@ -1,6 +1,11 @@
+// pages/index.tsx
+"use client";
+
 import { useEffect, useState } from "react";
 import NewsCard from "@/components/NewsCard";
 import AdSense from "@/components/AdSense";
+import styles from "@/styles/Home.module.css";
+
 type NewsItem = {
   _id: string;
   title: string;
@@ -15,31 +20,36 @@ type NewsItem = {
 };
 
 export default function Home() {
-  const [news, setNews] = useState<NewsItem[]>([]);
+  const [news, setNews]       = useState<NewsItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [error, setError]     = useState("");
 
   useEffect(() => {
     fetch("/api/news/list")
-      .then((res) => res.json())
-      .then((data) => setNews(data.news || []))
+      .then(res => res.json())
+      .then(data => setNews(data.news || []))
       .catch(() => setError("Erro ao carregar notícias."))
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <p style={centered}>🕓 Carregando notícias…</p>;
-  if (error) return <p style={{ ...centered, color: "red" }}>{error}</p>;
+  if (loading) {
+    return <p className={styles.centered}>🕓 Carregando notícias…</p>;
+  }
+  if (error) {
+    return <p className={`${styles.centered} ${styles.error}`}>{error}</p>;
+  }
 
   return (
-    <main style={mainStyle}>
-      <h1 style={titleStyle}>📰 Últimas Notícias</h1>
-      {/* Anúncio acima dos cards */}
+    <main className={styles.main}>
+      <h1 className={styles.title}>📰 Últimas Notícias</h1>
+
       <div className="ad-container mb-4">
         <AdSense slot={process.env.NEXT_PUBLIC_ADSENSE_SLOT!} />
       </div>
-      <div style={gridStyle}>
-        {news.map((item) => (
-          <div key={item._id} style={cardWrapper}>
+
+      <div className={styles.grid}>
+        {news.map(item => (
+          <div key={item._id} className={styles.cardWrapper}>
             <NewsCard
               id={item._id}
               title={item.title}
@@ -62,33 +72,3 @@ export default function Home() {
     </main>
   );
 }
-
-// estilos inline
-
-const centered: React.CSSProperties = {
-  textAlign: "center",
-  marginTop: "2rem",
-};
-
-const mainStyle: React.CSSProperties = {
-  maxWidth: "1200px",
-  margin: "auto",
-  padding: "2rem 1rem",
-};
-
-const titleStyle: React.CSSProperties = {
-  fontSize: "2rem",
-  marginBottom: "1.5rem",
-  textAlign: "center",
-};
-
-const gridStyle: React.CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
-  gap: "1.5rem",
-};
-
-const cardWrapper: React.CSSProperties = {
-  // opcional: garantir que o NewsCard preencha toda a célula
-  display: "flex",
-};

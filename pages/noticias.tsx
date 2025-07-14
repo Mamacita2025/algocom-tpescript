@@ -1,7 +1,10 @@
 // pages/noticias.tsx
+"use client";
+
 import { useState, useEffect, useCallback } from "react";
 import NewsCard from "@/components/NewsCard";
 import NewsFeed from "@/components/NewsFeed";
+import styles from "@/styles/Noticias.module.css";
 
 type LocalNews = {
   _id: string;
@@ -65,23 +68,22 @@ export default function NoticiasPage() {
   }, [loadLocalNews]);
 
   return (
-    <main style={containerStyle}>
-      <h1 style={titleStyle}>📰 Notícias do Portal</h1>
+     <main className={styles.container}>
+      <h1 className={styles.title}>📰 Notícias do Portal</h1>
 
-      <section style={sectionStyle}>
-        <div style={controlsStyle}>
+      <section className={styles.section}>
+        <div className={styles.controls}>
           <input
             type="text"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={e => setSearch(e.target.value)}
             placeholder="🔍 Buscar notícias..."
-            style={inputStyle}
+            className={styles.input}
           />
-
           <select
             value={filter}
-            onChange={(e) => setFilter(e.target.value)}
-            style={selectStyle}
+            onChange={e => setFilter(e.target.value)}
+            className={styles.select}
           >
             <option value="">Todas as categorias</option>
             <option value="tecnologia">💻 Tecnologia</option>
@@ -91,11 +93,10 @@ export default function NoticiasPage() {
           </select>
         </div>
 
-        {error && <p style={errorText}>{error}</p>}
-
+ {error && <p className={styles.errorText}>{error}</p>}
         {localNews.length > 0 ? (
           <>
-            <div style={gridStyle}>
+            <div  className={styles.grid}>
               {localNews.map((n) => (
                 <NewsCard
                   key={n._id}
@@ -112,92 +113,26 @@ export default function NoticiasPage() {
               ))}
             </div>
 
-            {loading && <p>🕓 Carregando mais...</p>}
+            {loading && <p className={styles.loading}>🕓 Carregando mais...</p>}
 
             {hasMore && !loading && (
-              <button onClick={() => setPage((p) => p + 1)} style={loadMoreBtn}>
+              <button onClick={() => setPage((p) => p + 1)} className={styles.loadMoreBtn}>
                 ➕ Carregar mais
               </button>
             )}
           </>
         ) : (
-          <p>😕 Nenhuma notícia encontrada.</p>
+          <p className={styles.noResults}>😕 Nenhuma notícia encontrada.</p>
         )}
       </section>
 
-      <hr style={divider} />
+      <hr className={styles.divider} />
 
-      <section style={{ marginTop: "2rem" }}>
-        <h2 style={subTitleStyle}>🌍 Manchetes Externas</h2>
+        <section className={styles.external}>
+        <h2 className={styles.subTitle}>🌍 Manchetes Externas</h2>
         <NewsFeed />
       </section>
     </main>
   );
 }
 
-const containerStyle: React.CSSProperties = {
-  maxWidth: "1200px",
-  margin: "auto",
-  padding: "1rem",
-};
-
-const titleStyle: React.CSSProperties = {
-  fontSize: "2rem",
-  textAlign: "center",
-  marginBottom: "1.5rem",
-};
-
-const sectionStyle: React.CSSProperties = {
-  marginBottom: "3rem",
-};
-
-const controlsStyle: React.CSSProperties = {
-  display: "flex",
-  flexWrap: "wrap",
-  gap: "0.5rem",
-  marginBottom: "1rem",
-};
-
-const inputStyle: React.CSSProperties = {
-  flex: "1 1 200px",
-  padding: "0.5rem",
-  borderRadius: "4px",
-  border: "1px solid #ccc",
-};
-
-const selectStyle: React.CSSProperties = {
-  padding: "0.5rem",
-  borderRadius: "4px",
-  border: "1px solid #ccc",
-};
-
-const gridStyle: React.CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
-  gap: "1rem",
-};
-
-const loadMoreBtn: React.CSSProperties = {
-  marginTop: "1rem",
-  padding: "0.6rem 1.2rem",
-  borderRadius: "6px",
-  border: "none",
-  background: "#0070f3",
-  color: "#fff",
-  cursor: "pointer",
-};
-
-const divider: React.CSSProperties = {
-  border: "none",
-  borderTop: "1px solid #ddd",
-};
-
-const subTitleStyle: React.CSSProperties = {
-  fontSize: "1.5rem",
-  marginBottom: "1rem",
-};
-
-const errorText: React.CSSProperties = {
-  color: "red",
-  marginBottom: "1rem",
-};
