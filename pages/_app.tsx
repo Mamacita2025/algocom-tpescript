@@ -53,6 +53,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
       />
 
         <Layout>
+          <Script src="https://fpyf8.com/88/tag.min.js" data-zone="157445" async data-cfasync="false" />
            <Script
         id="propellerads"
         strategy="afterInteractive"
