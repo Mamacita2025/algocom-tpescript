@@ -41,7 +41,7 @@ export default function Home() {
 
   return (
     <main className={styles.main}>
-            <PropellerAd zoneId={2962844} type="popunder" />
+            <PropellerAd zoneId={9576667} type="popunder" />
       <h1 className={styles.title}>📰 Últimas Notícias</h1>
 
       <div className="ad-container mb-4">

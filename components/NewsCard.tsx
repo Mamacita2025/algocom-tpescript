@@ -132,7 +132,7 @@ export default function NewsCard({
         <ContentModal title={title} content={loadingContent ? "<p>Carregando conteúdo…</p>" : fullContent} onClose={() => setShowContent(false)} externalUrl={externalUrl} />
       )}
        <PropellerAd
-        zoneId={2962844}
+        zoneId={9576664}
         type="banner"
         style={{ width: "100%", maxWidth: 300, height: 250, margin: "1rem auto" }}
       />

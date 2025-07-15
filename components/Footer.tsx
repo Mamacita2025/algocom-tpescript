@@ -7,7 +7,7 @@ export default function Footer() {
   return (
     <footer style={footerStyle}>
       <PropellerAd
-        zoneId={2962844}
+        zoneId={9576666}
         type="banner"
         style={{
           position: "fixed",
