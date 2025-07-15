@@ -10,7 +10,11 @@ const nextConfig = {
   // desativa otimizações automáticas do <Image>, permitindo qualquer src
   images: {
     unoptimized: true
-  }
+  },
+  experimental: {
+    turbo: false,
+  },
+
 };
 
 module.exports = nextConfig;

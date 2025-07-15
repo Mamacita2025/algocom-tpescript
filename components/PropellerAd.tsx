@@ -16,6 +16,9 @@ interface PropellerAdProps {
 
 export default function PropellerAd({ zoneId, type, style }: PropellerAdProps) {
   useEffect(() => {
+  console.log(">>> PropellerAds SDK:", window.PropellerAds);
+    if (!window.PropellerAds) return;
+  console.log(">>> exibindo zone:", zoneId);
     if (typeof window.PropellerAds === "undefined") return;
 
     if (type === "popunder") {

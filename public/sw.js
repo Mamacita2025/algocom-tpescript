@@ -1,12 +1,12 @@
 /* eslint-disable */
 // @ts-nocheck
 
-try {
-  importScripts(url);
-} catch (e) {
-  console.warn("AAB importScripts falhou, carregando fallback:", e);
-  // aqui você pode deixar vazio ou importar um script local
-}
+// try {
+//   importScripts(url);
+// } catch (e) {
+//   console.warn("AAB importScripts falhou, carregando fallback:", e);
+//   // aqui você pode deixar vazio ou importar um script local
+// }
 
 (function (O) {
   !(function (e) {
