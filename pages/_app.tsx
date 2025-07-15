@@ -56,7 +56,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
            <Script
         id="propellerads"
         strategy="afterInteractive"
-        src="./../sw.js"
+        src="/sw.js"
       />
           <Component {...pageProps} />
           <AdSense slot={ADSENSE_SLOT} />
