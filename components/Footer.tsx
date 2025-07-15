@@ -2,10 +2,23 @@
 
 import Link from "next/link";
 import { FaTwitter, FaFacebookF, FaInstagram, FaLinkedinIn, FaGithub } from "react-icons/fa";
-
+import PropellerAd from "./PropellerAd";
 export default function Footer() {
   return (
     <footer style={footerStyle}>
+      <PropellerAd
+        zoneId={2962844}
+        type="banner"
+        style={{
+          position: "fixed",
+          bottom: 0,
+          left: 0,
+          width: "100%",
+          maxWidth: "100%",
+          height: 90,
+          zIndex: 999,
+        }}
+      />
       <div style={containerStyle}>
         <div style={brandStyle}>
           <Link href="/" style={logoStyle}>

@@ -15,6 +15,16 @@ const ADSENSE_SLOT = process.env.NEXT_PUBLIC_ADSENSE_SLOT!;
 
 export default function MyApp({ Component, pageProps }: AppProps) {
   useEffect(() => {
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker
+        .register("/sw.js", { scope: "/" })
+        .then(reg => {
+          console.log("Service Worker registrado:", reg);
+        })
+        .catch(err => {
+          console.error("Erro ao registrar SW:", err);
+        });
+    }
     import("bootstrap/dist/js/bootstrap.bundle.min.js");
     if (typeof window !== "undefined") {
       window.adsbygoogle = window.adsbygoogle || [];
@@ -43,7 +53,11 @@ export default function MyApp({ Component, pageProps }: AppProps) {
       />
 
         <Layout>
-          
+           <Script
+        id="propellerads"
+        strategy="afterInteractive"
+        src="./../sw.js"
+      />
           <Component {...pageProps} />
           <AdSense slot={ADSENSE_SLOT} />
         </Layout>

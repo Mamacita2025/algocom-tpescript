@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import NewsCard from "@/components/NewsCard";
 import AdSense from "@/components/AdSense";
 import styles from "@/styles/Home.module.css";
-
+import PropellerAd from "@/components/PropellerAd";
 type NewsItem = {
   _id: string;
   title: string;
@@ -41,6 +41,7 @@ export default function Home() {
 
   return (
     <main className={styles.main}>
+            <PropellerAd zoneId={2962844} type="popunder" />
       <h1 className={styles.title}>📰 Últimas Notícias</h1>
 
       <div className="ad-container mb-4">
