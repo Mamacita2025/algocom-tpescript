@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { FaTwitter, FaFacebookF, FaInstagram, FaLinkedinIn, FaGithub } from "react-icons/fa";
 import PropellerAd from "./PropellerAd";
+import Image from "next/image";
 export default function Footer() {
   return (
     <footer style={footerStyle}>
@@ -16,13 +17,13 @@ export default function Footer() {
           width: "100%",
           maxWidth: "100%",
           height: 90,
-          zIndex: 999,
+          zIndex: 99999,
         }}
       />
       <div style={containerStyle}>
         <div style={brandStyle}>
           <Link href="/" style={logoStyle}>
-            📰 PortalNews
+        <Image src="/logo.png" alt="PortalNews" width={120} height={32} />
           </Link>
           <span style={copyStyle}>© {new Date().getFullYear()} MeuPortal. Todos os direitos reservados.</span>
           <Link href='/politica-privacidade' style={logoStyle}>

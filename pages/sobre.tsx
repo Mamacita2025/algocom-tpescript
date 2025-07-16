@@ -102,24 +102,16 @@ export default function SobrePage() {
 
       {/* Equipe */}
       <section className="container py-5">
-        <h2 className="h3 text-center mb-5">👥 Nossa Equipe</h2>
-        <div className="row gy-4">
+        <h2 className="h3 text-center mb-5">👥 Sem Equipe, Por Enquanto Apenas Eu</h2>
+        <div className="row gy-4 d-flex justify-center">
           {[
             {
               name: "Luis",
               role: "Desenvolvedor Full-Stack & Arquiteto Técnico",
-              img: "/team/luis.jpg",
+              img: "/images/luis-gomes.jpg",
             },
-            {
-              name: "Mariana",
-              role: "Editora-Chefe",
-              img: "/team/mariana.jpg",
-            },
-            {
-              name: "Rafael",
-              role: "Jornalista e Repórter",
-              img: "/team/rafael.jpg",
-            },
+          
+       
           ].map(({ name, role, img }) => (
             <div className="col-sm-6 col-lg-4" key={name}>
               <div className="card h-100 border-0 shadow-sm">
@@ -144,10 +136,10 @@ export default function SobrePage() {
       {/* Linha do tempo */}
       <section className="py-5 bg-light">
         <div className="container">
-          <h2 className="h3 text-center mb-5">📅 Nossa Trajetória</h2>
+          <h2 className="h3 text-center mb-5">📅 Minha Trajetória</h2>
           <ul className="timeline list-unstyled position-relative">
             {[
-              { year: 2020, text: "Fundação do MeuPortal com equipe de 3 pessoas" },
+              { year: 2020, text: "Fundação do MeuPortal " },
               {
                 year: 2021,
                 text: "Lançamento do podcast semanal sobre tecnologia",
@@ -190,7 +182,7 @@ export default function SobrePage() {
             padding: "3rem 1rem",
           }}
         >
-          <h2 className="h3 mb-3">🚀 Junte-se a nós!</h2>
+          <h2 className="h3 mb-3">🚀 Junte-se a Mim!</h2>
           <p className="mb-4">
             Seja colaborador, envie sugestões ou apoie nossos projetos de
             jornalismo independente.
