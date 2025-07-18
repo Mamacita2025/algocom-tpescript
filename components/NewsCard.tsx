@@ -7,7 +7,6 @@ import { useAuth } from "@/context/AuthContext";
 import CommentsModal from "./CommentsModal";
 import ContentModal from "./ContentModal";
 import styles from "./NewsCard.module.css";
-import PropellerAd from "./PropellerAd";
 type Props = {
   id: string;
   title: string;
@@ -174,16 +173,7 @@ export default function NewsCard({
           />
         )}
       </div>
-      <PropellerAd
-        zoneId={9576664}
-        type="banner"
-        style={{
-          width: "100%",
-          maxWidth: 300,
-          height: 250,
-          margin: "1rem auto",
-        }}
-      />
+    
     </>
   );
 }
